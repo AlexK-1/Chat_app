@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+
+{% for cat, message in get_flashed_messages(True) %}
+    {{cat.capitalize()}}: {{message}}
+{% endfor %}
+
+<form action="" method="POST">
+    {{form.hidden_tag()}}
+    {% for field in form if field.name not in ['csrf_token', 'submit'] %}
+        <p>{{field.label()}} {{field()}}
+        {% if field.errors %}
+            <span>
+                {% for e in field.errors %}
+                    {{e}}
+                {% endfor %}
+            </span>
+        {% endif %}
+        </p>
+    {% endfor %}
+    <p>{{form.submit()}}
+</form>
+
+{% endblock %}

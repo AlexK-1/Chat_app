@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Log In{% endblock %}
+
+{% block content %}
+
+{% for cat, message in get_flashed_messages(True) %}
+    <p>{{ cat.capitalize() }}: {{ message }}</p>
+{% endfor %}
+
+<form action="" method="POST">
+    {{ form.hidden_tag() }}
+    {% for field in form if field.name not in ['csrf_token', 'submit']%}
+        <p>
+            {{ field.label() }} {{ field() }}
+            {% if field.errors %}
+                <span>
+                    {% for e in field.errors %}
+                        {{ e }}
+                    {% endfor %}
+                </span>
+            {% endif %}
+        </p>
+    {% endfor %}
+    {{ form.submit() }}
+</form>
+
+{% endblock %}
