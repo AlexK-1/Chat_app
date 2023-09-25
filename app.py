@@ -33,11 +33,22 @@ def make_login(username: str, password: str):
     return False
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
     if current_user.is_authenticated:
-        return render_template("index_login.html", user=current_user)
+        posts = db.posts_all(20)[::-1]
+        form = PostForm()
+        if form.validate_on_submit():
+            db.post_create(current_user.get_username(), form.text.data)
+        return render_template("index_login.html", user=current_user, posts=posts, form=form)
     return render_template("index_no_login.html")
+
+@app.route("/send", methods=["POST"])
+def index_send_message():
+    form = PostForm()
+    if form.validate_on_submit():
+        db.post_create(current_user.get_username(), form.text.data)
+        return redirect(url_for("index"))
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():

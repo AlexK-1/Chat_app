@@ -15,3 +15,7 @@ class SignUpForm(FlaskForm):
     password2 = PasswordField("Password (again): ", validators=[DataRequired(), Length(min=8, max=100),
                                                                 EqualTo("password", message="Passwords don't match")])
     submit = SubmitField("Register")
+
+class PostForm(FlaskForm):
+    text = TextAreaField("", validators=[DataRequired()])
+    submit = SubmitField("Send")

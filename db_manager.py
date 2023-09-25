@@ -44,5 +44,21 @@ class DataBaseManager:
     def user_get_by_id(self, user_id: int):
         return self.user_get_info({"id": user_id}, "*", False)
 
+    def post_create(self, poster: str, text: str):
+        self.conn.execute("INSERT INTO Posts (poster, text) VALUES (?, ?)", (poster, text))
+        return self.conn.commit()
+
+    def posts_by_user(self, user: str):
+        result = self.cur.execute("SELECT * FROM Posts WHERE poster = ?", (user,))
+        return result.fetchall()
+
+    def posts_all(self, last: int):
+        result = self.cur.execute("SELECT * FROM Posts LIMIT 10 OFFSET (SELECT count(*) FROM Posts)-?", (last,))
+        return result.fetchall()
+
     def close(self):
         self.conn.close()
+
+db = DataBaseManager("Chat.db")
+
+db.close()

@@ -6,4 +6,38 @@
 
 Welcome to chat, {{ user.get_username() }}!
 
+<hr>
+
+<form action="/send" method="POST">
+    <p>Write a message.</p>
+    {{ form.hidden_tag() }}
+    {% for field in form if field.name not in ['csrf_token', 'submit']%}
+        <p>
+            {{ field.label() }} {{ field() }}
+            {% if field.errors %}
+                <span>
+                    {% for e in field.errors %}
+                        {{ e }}
+                    {% endfor %}
+                </span>
+            {% endif %}
+        </p>
+    {% endfor %}
+    {{ form.submit() }}
+</form>
+
+<hr>
+
+{% if posts %}
+    {% for post in posts %}
+        <div>
+            <strong>{{ post[1] }}</strong>
+            <p>{{ post[2] }}</p>
+            <em>{{ post[3] }}</em>
+        </div>
+    {% endfor %}
+{% else %}
+<p>There is nothing in this chat yet.</p>
+{% endif %}
+
 {% endblock %}
