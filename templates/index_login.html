@@ -4,40 +4,30 @@
 
 {% block content %}
 
-Welcome to chat, {{ user.get_username() }}!
+Welcome to chat, <span id="username">{{ user.get_username() }}</span>!
 
 <hr>
 
-<form action="/send" method="POST">
+<div>
     <p>Write a message.</p>
-    {{ form.hidden_tag() }}
-    {% for field in form if field.name not in ['csrf_token', 'submit']%}
-        <p>
-            {{ field.label() }} {{ field() }}
-            {% if field.errors %}
-                <span>
-                    {% for e in field.errors %}
-                        {{ e }}
-                    {% endfor %}
-                </span>
-            {% endif %}
-        </p>
-    {% endfor %}
-    {{ form.submit() }}
-</form>
+    <textarea id="message_text"></textarea><br>
+    <button id="send_message">Send</button>
+</div>
 
 <hr>
 
 {% if posts %}
     {% for post in posts %}
-        <div>
+        <div class="post">
             <strong>{{ post[1] }}</strong>
             <p>{{ post[2] }}</p>
-            <em>{{ post[3] }}</em>
+<!--            <em>{{ post[3] }}</em>-->
         </div>
     {% endfor %}
 {% else %}
-<p>There is nothing in this chat yet.</p>
+    <p id="no_posts">There is nothing in this chat yet.</p>
 {% endif %}
+
+<script src="{{ url_for('static', filename='index_login.js') }}"></script>
 
 {% endblock %}

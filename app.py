@@ -1,12 +1,14 @@
 from flask import Flask, request, render_template, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_socketio import send
 
 import os
 
 from db_manager import DataBaseManager
 from user_manager import User
 from forms_manager import *
+import events_manager as events
 
 
 app = Flask(__name__)
@@ -15,6 +17,8 @@ app.config['SECRET_KEY'] = os.urandom(32)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 login_manager.login_message = "Log in to log in to this page"
+
+events.socketio.init_app(app)
 
 db = DataBaseManager("Chat.db")
 
@@ -89,4 +93,6 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=2200, debug=True)
+    # app.run(host="0.0.0.0", port=2200, debug=True)
+    # socketio.run(app, host="127.0.0.1", port=2200, debug=True)
+    events.run(app)
