@@ -4,30 +4,28 @@
 
 {% block content %}
 
-Welcome to chat, <span id="username">{{ user.get_username() }}</span>!
+<p>Welcome, <span id="username">{{ user.get_username() }}</span>!</p>
 
-<hr>
-
-<div>
-    <p>Write a message.</p>
-    <textarea id="message_text"></textarea><br>
-    <button id="send_message">Send</button>
-</div>
-
-<hr>
-
-{% if posts %}
-    {% for post in posts %}
-        <div class="post">
-            <strong>{{ post[1] }}</strong>
-            <p>{{ post[2] }}</p>
-<!--            <em>{{ post[3] }}</em>-->
+{% if groups %}
+    <p>Your groups:</p>
+    {% for group in groups %}
+        <div>
+            <a href="{{ url_for('room', room_id = group[0]) }}"> {{ group[1] }} {{ group[2] }}</a>
         </div>
     {% endfor %}
-{% else %}
-    <p id="no_posts">There is nothing in this chat yet.</p>
 {% endif %}
 
-<script src="{{ url_for('static', filename='index_login.js') }}"></script>
+{% if chats %}
+    <p>Your chats:</p>
+    {% for chat in chats %}
+        <div>
+            <a href="{{ url_for('room', room_id = chat[0]) }}"> {{ chat[1] }} {{ chat[2] }}</a>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<br>
+
+<a href="{{ url_for('new_room') }}">Create new room</a>
 
 {% endblock %}

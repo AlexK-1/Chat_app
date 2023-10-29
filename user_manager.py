@@ -17,3 +17,6 @@ class User(UserMixin):
 
     def get_username(self):
         return str(self.user_[1])
+
+    def get_status(self):
+        return str(self.user_[4])

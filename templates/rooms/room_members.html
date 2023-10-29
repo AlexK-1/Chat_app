@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Members of {{ room[1] }} {{ room[3] }}{% endblock %}
+
+{% block content %}
+
+<div>
+    <p>Members of {{ room[1] }} {{ room[3] }}:</p>
+    {% if members == "*all" %}
+        <p>all</p>
+    {% else %}
+        <ul id="members">
+            {% for member in members %}
+                <li id="member_{{ member }}">
+                    <div>
+                        <span>{{ member }}</span>
+                        {% if member in admins and room[5] != member %}
+                            <span>admin</span>
+                            <button type="button" onclick="removeMember('{{ member }}')">Remove</button>
+                        {% elif room[5] == member %}
+                            <span>owner</span>
+                        {% else %}
+                            {% if is_admin %}
+                                <button type="button" onclick="makeAdmin('{{ member }}')">Promote</button>
+                                <button type="button" onclick="removeMember('{{ member }}')">Remove</button>
+                            {% endif %}
+                        {% endif %}
+
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+
+<div>
+    <p>Admins of {{ room[1] }} {{ room[3] }}:</p>
+    <ul id="admins">
+        {% for admin in admins %}
+            <li id="admin_{{ admin }}">
+                <div>
+                    <span>{{ admin }}</span>
+                    {% if room[5] == admin %}
+                        <span>owner</span>
+                    {% else %}
+                        {% if user == room[5] %}
+                            <button type="button" onclick="demoteAdmin('{{ admin }}')">Demote</button>
+                        {% endif %}
+                        {% if is_admin %}
+                            <button type="button" onclick="removeMember('{{ admin }}')">Remove</button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+    user = {{ {"data": user}|tojson }}.data
+    room = {{ {"data": room}|tojson }}.data
+</script>
+
+<script src="{{ url_for('static', filename='room_members.js') }}"></script>
+
+{% endblock %}

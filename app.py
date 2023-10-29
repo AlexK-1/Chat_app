@@ -1,9 +1,10 @@
-from flask import Flask, request, render_template, redirect, url_for, flash
+from flask import Flask, request, render_template, redirect, url_for, flash, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import send
 
 import os
+from ast import literal_eval
 
 from db_manager import DataBaseManager
 from user_manager import User
@@ -25,7 +26,7 @@ db = DataBaseManager("Chat.db")
 
 @login_manager.user_loader
 def load_user(user_id):
-    print("load_user")
+    # print("load_user")
     return User().get_user(user_id, db)
 
 def make_login(username: str, password: str):
@@ -40,20 +41,186 @@ def make_login(username: str, password: str):
 @app.route("/", methods=["GET", "POST"])
 def index():
     if current_user.is_authenticated:
-        posts = db.posts_all(20)[::-1]
-        form = PostForm()
-        if form.validate_on_submit():
-            db.post_create(current_user.get_username(), form.text.data)
-        return render_template("index_login.html", user=current_user, posts=posts, form=form)
+        groups = db.rooms_user_in(current_user.get_username(), "group")
+        chats = db.rooms_user_in(current_user.get_username(), "chat")
+        return render_template("index_login.html", user=current_user, groups=groups, chats=chats)
     return render_template("index_no_login.html")
 
-@app.route("/send", methods=["POST"])
-def index_send_message():
-    form = PostForm()
-    if form.validate_on_submit():
-        db.post_create(current_user.get_username(), form.text.data)
-        return redirect(url_for("index"))
 
+# <============================== Room pages ==============================> #
+@app.route("/rooms/<int:room_id>")
+@login_required
+def room(room_id: int):
+    room = db.room_get_info({"id": room_id}, "*", False)
+    if room:
+        if ((room[3] == "archive" and current_user.get_status() == "moderator") or
+                (room[3] == "chat" and (current_user.get_username() in literal_eval(room[2]))) or
+                (room[3] == "group" and ((room[2] == "*all" and room[4] == "*members") or (
+                        room[4] == "*members" and "[" in room[2] and current_user.get_username() in literal_eval(
+                    room[2])) or room[4] == "*all"))):
+            posts = db.posts_all(20, room_id)[::-1]
+
+            if current_user.get_username() in literal_eval(room[7]):
+                is_admin = True
+            else:
+                is_admin = False
+
+            if room[3] == "chat":
+                can_write = True
+
+                other_chat_member = list(literal_eval(room[2]))
+                other_chat_member.remove(current_user.get_username())
+                other_chat_member = other_chat_member[0]
+
+                title = f"Chat with {other_chat_member}"
+            elif room[3] == "group":
+                title = f"{room[1]} {room[3]}"
+                if room[2] == "*all" or ("[" in room[2] and current_user.get_username() in literal_eval(room[2])):
+                    can_write = True
+                else:
+                    can_write = False
+            else:
+                can_write = True
+                title = f"{room[1]} {room[3]}"
+
+            if is_admin:
+                delete_form = DeleteRoomForm()
+            else:
+                delete_form = False
+
+            if room[2] == "*all" or current_user.get_username() in list(literal_eval(room[2])):
+                leave_form = LeaveRoomForm()
+            else:
+                leave_form = False
+
+            if not can_write:
+                join_form = JoinRoomForm()
+            else:
+                join_form = False
+
+            print(join_form, can_write)
+
+            return render_template("rooms/room.html", user=current_user.get_username(), room=room, posts=posts,
+                                   can_write=can_write, admin=is_admin, title=title, delete_room_form=delete_form,
+                                   leave_room_form=leave_form, join_room_form=join_form)
+        else:
+            return render_template("rooms/can_not_view_room.html", user=current_user.get_username(), room=room)
+    else:
+        abort(404)
+
+@app.route("/rooms/<int:room_id>/delete", methods=["POST"])
+@login_required
+def delete_room(room_id: int):
+    if db.room_exists_by_id(room_id):
+        if current_user.get_username() == db.room_get_info({"id": room_id}, "owner"):
+            db.room_delete(room_id)
+    return redirect(url_for("index"))
+
+@app.route("/rooms/<int:room_id>/leave", methods=["POST"])
+@login_required
+def leave_room(room_id: int):
+    if db.room_exists_by_id(room_id):
+        if current_user.get_username() in literal_eval(db.room_get_info({"id": room_id}, "members")):
+            db.room_remove_member(room_id, current_user.get_username())
+    return redirect(url_for("index"))
+
+@app.route("/rooms/<int:room_id>/join", methods=["POST"])
+@login_required
+def join_room(room_id: int):
+    if db.room_exists_by_id(room_id):
+        room_data = db.room_get_info({"id": room_id}, "members, type, visibility", False)
+        print(room_data[0])
+        if current_user.get_username() not in literal_eval(room_data[0]) and room_data[1] == "group" and room_data[2] == "*all":
+            db.room_add_member(room_id, current_user.get_username())
+    return redirect(url_for("room", room_id=room_id))
+
+@app.route("/new_room")
+@login_required
+def new_room():
+    return render_template("rooms/new_room.html", user=current_user.get_username())
+
+@app.route("/new_room/create", methods=["POST"])
+@login_required
+def create_new_room():
+    if request.form.get("type") == "chat":
+        if request.form.get("username") != "" and request.form.get("username") != current_user.get_username() and db.user_exists(request.form.get("username")) and not db.chat_exists(request.form.get("username"), current_user.get_username()):
+            room_id = db.room_create(f"chat-{current_user.get_username()}-{request.form.get('username')}",
+                           f"[\"{current_user.get_username()}\", \"{request.form.get('username')}\"]",
+                           "chat",
+                           "*members",
+                           "",
+                           f"[\"{current_user.get_username()}\", \"{request.form.get('username')}\"]")
+            return redirect(url_for("room", room_id=room_id))
+        else:
+            flash("Probably the username.", "error")
+            return redirect(url_for("new_room"))
+    elif request.form.get("type") == "group":
+        members = [i for i in request.form.keys() if "member_" in i and "field" not in i]
+        admins = [i for i in request.form.keys() if "admin_" in i and "field" not in i]
+
+        members = list(map(request.form.get, members))
+        admins = list(map(request.form.get, admins))
+
+        members = [i for i in members if db.user_exists(i)]
+        admins = [i for i in admins if db.user_exists(i) and i in members]
+
+        members = list(set(members))
+        admins = list(set(admins))
+
+        if request.form.get("group_name") != "":
+            if len(members) > 1:
+                if len(members) > 0:
+                    if current_user.get_username() in members:
+                        members = [f'"{i}"' for i in members]
+                        admins = [f'"{i}"' for i in admins]
+
+                        if request.form.get("open") == "open":
+                            visibility = "*all"
+                        else:
+                            visibility = "*members"
+
+                        room_id = db.room_create(request.form.get("group_name"),
+                                       f'[{",".join(members)}]',
+                                       "group",
+                                       visibility,
+                                       current_user.get_username(),
+                                       f'[{",".join(admins)}]')
+
+                        return redirect(url_for("room", room_id=room_id))
+                    else:
+                        flash("You must be a member of the group.", "error")
+                else:
+                    flash("There must be at least one admin in the group.", "error")
+            else:
+                flash("There can't be one member in a group.", "error")
+        else:
+            flash("Probably the name of the group.", "error")
+
+        return redirect(url_for("new_room"))
+
+@app.route("/rooms/<int:room_id>/members")
+@login_required
+def room_members(room_id: int):
+    room = db.room_get_info({"id": room_id}, "*", False)
+    if room and room[3] != "chat":
+        if (room[4] == "*all" or
+                (room[4] == "*members" and room[3] == "group" and current_user.get_username() in literal_eval(room[2])) or
+                (room[3] == "archive" and current_user.get_status() == "moderator")):
+            if "[" in room[2]:
+                members = literal_eval(room[2])
+            else:
+                members = room[2]
+
+            admins = literal_eval(room[7])
+
+            return render_template("rooms/room_members.html", room=room, members=members, admins=admins,
+                                   is_admin=current_user.get_username() in admins, user=current_user.get_username())
+        else:
+            return render_template("rooms/can_not_view_room_members.html")
+    else:
+        abort(404)
+
+# <============================== Authorisation pages ==============================> #
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     allowed_characters = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM_-0123456789"
@@ -66,7 +233,7 @@ def signup():
                     allowed = False
                     break
             if allowed:
-                db.user_create(form.username.data, form.password.data, form.email.data)
+                db.user_create(form.username.data, form.password.data)  # form.email.data
                 make_login(form.username.data, form.password.data)
                 return redirect(url_for("index"))
             else:

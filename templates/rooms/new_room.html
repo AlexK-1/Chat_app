@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Create new room{% endblock %}
+
+{% block content %}
+
+New room.
+
+<br>
+
+{% for cat, message in get_flashed_messages(True) %}
+    {{cat.capitalize()}}: {{message}}
+{% endfor %}
+
+<form action="new_room/create" method="POST">
+    <p><input type="radio" name="type" value="chat" id="type_chat" onchange="updateForm('chat')"> Chat
+        <input type="radio" name="type" value="group" id="type_group" onchange="updateForm('group')"> Group
+    </p>
+</form>
+
+<script>
+    const user = {{ {"data": user}|tojson }}.data
+</script>
+
+<script src="{{ url_for('static', filename='new_room.js') }}"></script>
+
+{% endblock %}
