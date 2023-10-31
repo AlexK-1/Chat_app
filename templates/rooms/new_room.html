@@ -13,13 +13,15 @@ New room.
 {% endfor %}
 
 <form action="new_room/create" method="POST">
+    <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
     <p><input type="radio" name="type" value="chat" id="type_chat" onchange="updateForm('chat')"> Chat
         <input type="radio" name="type" value="group" id="type_group" onchange="updateForm('group')"> Group
     </p>
 </form>
 
 <script>
-    const user = {{ {"data": user}|tojson }}.data
+    const user = {{ {"data": user}|tojson }}.data;
+    const csrf_token = "{{ csrf_token() }}";
 </script>
 
 <script src="{{ url_for('static', filename='new_room.js') }}"></script>

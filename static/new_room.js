@@ -6,6 +6,7 @@ const updateForm = function(room_type) {
     switch(room_type) {
         case "chat":
             form.innerHTML = `
+            <input id="csrf_token" name="csrf_token" type="hidden" value="${csrf_token}">
             <p><input type="radio" name="type" value="chat" id="type_chat" onchange="updateForm('chat')" checked> Chat
             <input type="radio" name="type" value="group" id="type_group" onchange="updateForm('group')"> Group
             </p>
@@ -20,6 +21,7 @@ const updateForm = function(room_type) {
             break;
         case "group":
             form.innerHTML = `
+            <input id="csrf_token" name="csrf_token" type="hidden" value="${csrf_token}">
             <p><input type="radio" name="type" value="chat" id="type_chat" onchange="updateForm('chat')"> Chat
                 <input type="radio" name="type" value="group" id="type_group" onchange="updateForm('group')" checked> Group
             </p>

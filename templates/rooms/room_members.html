@@ -57,8 +57,8 @@
 </div>
 
 <script>
-    user = {{ {"data": user}|tojson }}.data
-    room = {{ {"data": room}|tojson }}.data
+    const user = {{ {"data": user}|tojson }}.data;
+    const room = {{ {"data": room}|tojson }}.data;
 </script>
 
 <script src="{{ url_for('static', filename='room_members.js') }}"></script>

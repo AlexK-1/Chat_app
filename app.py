@@ -1,7 +1,9 @@
-from flask import Flask, request, render_template, redirect, url_for, flash, abort
+from flask import Flask, request, render_template, redirect, url_for, flash, abort, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import send
+from flask_wtf import CSRFProtect
+from flask_session import Session
 
 import os
 from ast import literal_eval
@@ -13,13 +15,18 @@ import events_manager as events
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(32)
+app.config["SECRET_KEY"] = os.urandom(32)
+app.config['SESSION_TYPE'] = 'filesystem'
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 login_manager.login_message = "Log in to log in to this page"
 
 events.socketio.init_app(app)
+
+csrf = CSRFProtect(app)
+
+Session(app)
 
 db = DataBaseManager("Chat.db")
 
@@ -34,6 +41,7 @@ def make_login(username: str, password: str):
     if user_info and check_password_hash(user_info[2], password):
         user_login = User().create(user_info)
         login_user(user_login, remember=True)
+        session["username"] = username
         return True
     return False
 
@@ -256,6 +264,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+    session["username"] = None
     return redirect(url_for("index"))
 
 

@@ -1,9 +1,8 @@
 const socket = io();
+
 socket.on("connect", function(data) {
     console.log("Socket.IO is connected!!!")
 });
-
-//let room = undefined
 
 const init_data = function(room_){
     room = room_;
@@ -32,6 +31,7 @@ send_message.addEventListener("click", function(){
     const message_text = document.getElementById("message_text");
     const username = document.getElementById("username");
     const data = {poster: user, text: message_text.value, room: room[0]};
+    console.log(data);
     socket.emit("new_message", data);
 });
 

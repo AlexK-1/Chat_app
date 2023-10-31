@@ -58,9 +58,9 @@ Welcome to {{ room[1] }} {{ room[3] }}, <span id="username">{{ user }}</span>!
 
 <script>
     //init_data({{ {"data": room}|tojson }})
-    const room = {{ {"data": room}|tojson }}.data
-    const user = {{ {"data": user}|tojson }}.data
-    const is_admin = {{ {"data": admin}|tojson }}.data
+    const room = {{ {"data": room}|tojson }}.data;
+    const user = {{ {"data": user}|tojson }}.data;
+    const is_admin = {{ {"data": admin}|tojson }}.data;
 </script>
 <script src="{{ url_for('static', filename='room.js') }}"></script>
 
