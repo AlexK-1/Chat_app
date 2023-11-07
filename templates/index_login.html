@@ -4,28 +4,76 @@
 
 {% block content %}
 
-<p>Welcome, <span id="username">{{ user.get_username() }}</span>!</p>
+<div id="main-wrapper" class="wrapp">
 
-{% if groups %}
-    <p>Your groups:</p>
-    {% for group in groups %}
+<div style="overflow-y: auto;overflow-x: hidden">
+<div id="left-panel">
+
+<section aria-label="Top left panel" id="top-left-panel" class="additional-panel">
+    <div>
+        <button>Settings</button>
+        <input type="search" id="search-input">
+        <button>Search</button>
+    </div>
+</section>
+
+<div aria-label="User rooms" id="rooms-container">
+    <nav>
+        <ul class="unmark-list" id="rooms-list">
+            {% if groups %}
+                <li class="rooms-label"><p>Your groups:</p></li>
+                {% for group in groups %}
+                    <li>
+                        <a href="{{ url_for('room', room_id = group[0]) }}" class="room-container">
+                            <div>
+                                <span class="room-name">{{ group[1] }} {{ group[2] }}</span>
+                            </div>
+                        </a>
+                    </li>
+                {% endfor %}
+            {% endif %}
+    
+            {% if chats %}
+                <li class="rooms-label"><p>Your chats:</p></li>
+                {% for chat in chats %}
+                    <li>
+                        <a href="{{ url_for('room', room_id = chat[0]) }}" class="room-container">
+                            <div>
+                                <span class="room-name">{{ chat[1] }} {{ chat[2] }}</span>
+                            </div>
+                        </a>
+                    </li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<section aria-label="Left bottom panel" id="left-bottom-panel" class="additional-panel">
+    <div>
         <div>
-            <a href="{{ url_for('room', room_id = group[0]) }}"> {{ group[1] }} {{ group[2] }}</a>
+            <span>{{ user }}</span>
         </div>
-    {% endfor %}
-{% endif %}
-
-{% if chats %}
-    <p>Your chats:</p>
-    {% for chat in chats %}
         <div>
-            <a href="{{ url_for('room', room_id = chat[0]) }}"> {{ chat[1] }} {{ chat[2] }}</a>
+            <a href="{{ url_for('new_room') }}">Create new room</a>
         </div>
-    {% endfor %}
-{% endif %}
+        <div>
+            <a href="{{ url_for('logout') }}">log out</a>
+        </div>
+    </div>
+</section>
 
-<br>
+</div>
+</div>
 
-<a href="{{ url_for('new_room') }}">Create new room</a>
+<main>
+
+<div class="center_message">
+    <p>You haven't chosen a room yet.</p>
+</div>
+
+</main>
+
+</div>
 
 {% endblock %}

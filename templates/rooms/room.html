@@ -4,57 +4,153 @@
 
 {% block content %}
 
-Welcome to {{ room[1] }} {{ room[3] }}, <span id="username">{{ user }}</span>!
 
-{% if (room[5] == user and room[3] != "archive") or room[3] == "chat" %}
-    <form action="{{ url_for('delete_room', room_id=room[0]) }}" method="POST">
-        {{ delete_room_form.hidden_tag() }}
-        {{ delete_room_form.submit() }}
-    </form>
+<div id="main-wrapper" class="wrapp">
+
+<div style="overflow-y: auto;overflow-x: hidden">
+<div id="left-panel">
+
+<section aria-label="Settings and search panel" id="top-left-panel" class="additional-panel">
+    <div>
+        <button>Settings</button>
+        <input type="search" id="search-input">
+        <button>Search</button>
+    </div>
+</section>
+
+
+<div aria-label="User rooms" id="rooms-container" aria-label="User rooms">
+    <nav>
+        <ul class="unmark-list" id="rooms-list">
+            <li id="rooms_loading"><p>loading...</p></li>
+        </ul>
+    </nav>
+</div>
+
+
+<section aria-label="Additional features panel" id="left-bottom-panel" class="additional-panel">
+    <div>
+        <div>
+            <span>{{ user }}</span>
+        </div>
+        <div>
+            <a href="{{ url_for('new_room') }}">Create new room</a>
+        </div>
+        <div>
+            <a href="{{ url_for('logout') }}">log out</a>
+        </div>
+    </div>
+</section>
+
+</div>
+</div>
+
+<main>
+
+{% if can_view %}
+    <div id="upper-sticky-panel">
+        <section  class="additional-panel" id="top-center-panel" aria-label="Rooms features panel">
+            <h3 id="room_name">{{ room[1] }}</h3>
+            {% if (room[5] == user and room[3] != "archive") or room[3] == "chat" %}
+                <form action="{{ url_for('delete_room', room_id=room[0]) }}" method="POST" class="room_method">
+                    {{ delete_room_form.hidden_tag() }}
+                    {{ delete_room_form.submit(id="delete_room_submit") }}
+                </form>
+            {% endif %}
+
+            {% if room[3] == "group" and room[2] != "*all" and room[5] != user and can_write %}
+                <form action="{{ url_for('leave_room', room_id=room[0]) }}" method="POST" class="room_method">
+                    {{ leave_room_form.hidden_tag() }}
+                    {{ leave_room_form.submit(id="leave_room_submit") }}
+                </form>
+            {% endif %}
+
+            {% if join_room_form %}
+                <form action="{{ url_for('join_room', room_id=room[0]) }}" method="POST" class="room_method">
+                    {{ join_room_form.hidden_tag() }}
+                    {{ join_room_form.submit(id="join_room_submit") }}
+                </form>
+            {% endif %}
+        </section>
+    </div>
 {% endif %}
 
-{% if room[3] == "group" and room[2] != "*all" and room[5] != user and can_write %}
-    <form action="{{ url_for('leave_room', room_id=room[0]) }}" method="POST">
-        {{ leave_room_form.hidden_tag() }}
-        {{ leave_room_form.submit() }}
-    </form>
-{% endif %}
-
-{% if join_room_form %}
-    <form action="{{ url_for('join_room', room_id=room[0]) }}" method="POST">
-        {{ join_room_form.hidden_tag() }}
-        {{ join_room_form.submit() }}
-    </form>
-{% endif %}
-
-<hr>
-
-<div>
-    {% if can_write %}
-        <p>Write a message.</p>
-        <textarea id="message_text"></textarea><br>
-        <button id="send_message">Send</button>
+<div class="center_message" id="posts-loading">
+    {% if can_view %}
+        <p>Loading...</p>
     {% else %}
-        <p>You can't write in this {{ room[3] }}.</p>
+        <p>You can't view this room.</p>
     {% endif %}
 </div>
 
-<hr>
+</main>
 
-{% if posts %}
-    {% for post in posts %}
-        <div class="post" id="post{{ post[0] }}">
-            <strong>{{ post[1] }}</strong>
-            <p>{{ post[2] }}</p>
-<!--            <em>{{ post[3] }}</em>-->
-            {% if admin or post[1] == user %}
-                <button type="button" onclick="deletePost({{ post[0] }})">Delete post</button>
-            {% endif %}
-        </div>
-    {% endfor %}
-{% else %}
-    <p id="no_posts">There is nothing in this chat yet.</p>
+{% if can_view %}
+    <aside id="right-panel">
+        <ul class="unmark-list" id="room-members-list">
+            <li id="members-label"><h3 class="users-label">Members:</h3></li>
+            <li class="members-loading"><span>Loading...</span></li>
+            <li id="admins-label"><h3 class="users-label">Admins:</h3></li>
+            <li class="members-loading"><span>Loading...</span></li>
+        </ul>
+    </aside>
 {% endif %}
+
+</div>
+
+
+
+<!--Welcome to {{ room[1] }} {{ room[3] }}, <span id="username">{{ user }}</span>!-->
+
+<!--{% if (room[5] == user and room[3] != "archive") or room[3] == "chat" %}-->
+<!--    <form action="{{ url_for('delete_room', room_id=room[0]) }}" method="POST">-->
+<!--        {{ delete_room_form.hidden_tag() }}-->
+<!--        {{ delete_room_form.submit() }}-->
+<!--    </form>-->
+<!--{% endif %}-->
+
+<!--{% if room[3] == "group" and room[2] != "*all" and room[5] != user and can_write %}-->
+<!--    <form action="{{ url_for('leave_room', room_id=room[0]) }}" method="POST">-->
+<!--        {{ leave_room_form.hidden_tag() }}-->
+<!--        {{ leave_room_form.submit() }}-->
+<!--    </form>-->
+<!--{% endif %}-->
+
+<!--{% if join_room_form %}-->
+<!--    <form action="{{ url_for('join_room', room_id=room[0]) }}" method="POST">-->
+<!--        {{ join_room_form.hidden_tag() }}-->
+<!--        {{ join_room_form.submit() }}-->
+<!--    </form>-->
+<!--{% endif %}-->
+
+<!--<hr>-->
+
+<!--<div>-->
+<!--    {% if can_write %}-->
+<!--        <p>Write a message.</p>-->
+<!--        <textarea id="message_text"></textarea><br>-->
+<!--        <button id="send_message">Send</button>-->
+<!--    {% else %}-->
+<!--        <p>You can't write in this {{ room[3] }}.</p>-->
+<!--    {% endif %}-->
+<!--</div>-->
+
+<!--<hr>-->
+
+<!--{% if posts %}-->
+<!--    {% for post in posts %}-->
+<!--        <div class="post" id="post{{ post[0] }}">-->
+<!--            <strong>{{ post[1] }}</strong>-->
+<!--            <p>{{ post[2] }}</p>-->
+<!--&lt;!&ndash;            <em>{{ post[3] }}</em>&ndash;&gt;-->
+<!--            {% if admin or post[1] == user %}-->
+<!--                <button type="button" onclick="deletePost({{ post[0] }})">Delete post</button>-->
+<!--            {% endif %}-->
+<!--        </div>-->
+<!--    {% endfor %}-->
+<!--{% else %}-->
+<!--    <p id="no_posts">There is nothing in this chat yet.</p>-->
+<!--{% endif %}-->
 
 <script>
     //init_data({{ {"data": room}|tojson }})

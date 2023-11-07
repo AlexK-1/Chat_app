@@ -262,3 +262,78 @@ const getAdminsListGroup = function() {
     }
     
 }
+
+
+const createRoomsList = function(data) {
+
+    if (data.successful) {
+        const ul = document.getElementById("rooms-list")
+
+        const loading = document.getElementById("rooms_loading");
+        loading.remove();
+
+        if (data.groups.length > 0) {
+            const li_label = document.createElement("li");
+            li_label.className = "rooms-label";
+
+            const p_label = document.createElement("p");
+            p_label.innerHTML = "Your groups:";
+
+            li_label.append(p_label);
+            ul.append(li_label);
+
+            data.groups.forEach(element => {
+                const li = document.createElement("li");
+
+                const a = document.createElement("a");
+                a.href = "/rooms/" + element[0];
+                a.className = "room-container";
+
+                const div = document.createElement("div");
+
+                const p = document.createElement("p");
+                p.innerHTML = `${element[1]} ${element[2]}`;
+                p.className = "room-name";
+
+                div.append(p);
+                a.append(div);
+                li.append(a);
+                ul.append(li);
+            });
+        }
+
+        if (data.chats.length > 0) {
+            const li_label = document.createElement("li");
+            li_label.className = "rooms-label";
+
+            const p_label = document.createElement("p");
+            p_label.innerHTML = "Your chats:";
+
+            li_label.append(p_label);
+            ul.append(li_label);
+
+            data.chats.forEach(element => {
+                const li = document.createElement("li");
+
+                const a = document.createElement("a");
+                a.href = "/rooms/" + element[0];
+                a.className = "room-container";
+
+                const div = document.createElement("div");
+
+                const p = document.createElement("span");
+                p.innerHTML = `${element[1]} ${element[2]}`;
+                p.className = "room-name";
+
+                div.append(p);
+                a.append(div);
+                li.append(a);
+                ul.append(li);
+            });
+        }
+    }
+}
+
+fetch(`${location.protocol + '//' + location.host}/api/user_rooms`)
+    .then(data => data.json())
+    .then(json => createRoomsList(json));

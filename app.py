@@ -46,14 +46,88 @@ def make_login(username: str, password: str):
     return False
 
 
+# <============================== Index ==============================> #
 @app.route("/", methods=["GET", "POST"])
 def index():
     if current_user.is_authenticated:
         groups = db.rooms_user_in(current_user.get_username(), "group")
         chats = db.rooms_user_in(current_user.get_username(), "chat")
-        return render_template("index_login.html", user=current_user, groups=groups, chats=chats)
+        return render_template("index_login.html", user=current_user.get_username(), groups=groups, chats=chats)
     return render_template("index_no_login.html")
 
+# <============================== API ==============================> #
+@app.route("/api/user_rooms")
+def api_user_rooms():
+    if current_user.is_authenticated:
+        groups = db.rooms_user_in(current_user.get_username(), "group")
+        chats = db.rooms_user_in(current_user.get_username(), "chat")
+        response = {"successful": True,
+                    "groups": groups,
+                    "chats": chats}
+        return jsonify(response)
+    else:
+        response = {"successful": False,
+                    "groups": None,
+                    "chats": None}
+        return jsonify(response)
+
+@app.route("/api/room_members/<int:room_id>")
+def api_room_members(room_id: int):
+    room = db.room_get_info({"id": room_id}, "type, members, admins, owner, visibility", False)
+    if room:
+        if room and room[0] != "chat":
+            if (room[4] == "*all" or
+                    (room[4] == "*members" and room[0] == "group" and current_user.get_username() in literal_eval(
+                        room[1])) or
+                    (room[0] == "archive" and current_user.get_status() == "moderator")):
+                if "[" in room[1]:
+                    members = literal_eval(room[1])
+                else:
+                    members = room[1]
+
+                admins = literal_eval(room[2])
+
+                response = {
+                    "successful": True,
+                    "is_admin": current_user.get_username() in admins,
+                    "is_owner": current_user.get_username() == room[3],
+                    "members": members,
+                    "admins": admins,
+                    "owner": room[3]
+                }
+                return jsonify(response)
+    response = {
+        "successful": False,
+        "is_admin": None,
+        "admins": None,
+        "members": None,
+        "owner": None
+    }
+    return jsonify(response)
+
+@app.route("/api/room_posts/<int:room_id>")
+def api_room_posts(room_id: int):
+    room = db.room_get_info({"id": room_id}, "members, admins, visibility, type", False)
+    if room:
+        if (room[2] != "*nobody" or current_user.get_status() == "moderator") and ((room[2] == "*all" or (room[2] == "*nobody" or current_user.get_status() == "moderator")) or current_user.get_username() in literal_eval(room[0])):
+            posts = db.posts_all(int(request.args.get("e")), room_id)[::-1]
+
+            can_write = None
+
+            response = {
+                "successful": True,
+                "posts": posts,
+                "is_admin": current_user.get_username() in literal_eval(room[1]),
+                "can_write": room[3] != "archive" and (room[0] == "*all" or current_user.get_username() in literal_eval(room[0]))
+            }
+            return jsonify(response)
+    response = {
+        "successful": False,
+        "posts": None,
+        "is_admin": None,
+        "can_write": None
+    }
+    return jsonify(response)
 
 # <============================== Room pages ==============================> #
 @app.route("/rooms/<int:room_id>")
@@ -110,9 +184,11 @@ def room(room_id: int):
 
             return render_template("rooms/room.html", user=current_user.get_username(), room=room, posts=posts,
                                    can_write=can_write, admin=is_admin, title=title, delete_room_form=delete_form,
-                                   leave_room_form=leave_form, join_room_form=join_form)
+                                   leave_room_form=leave_form, join_room_form=join_form, can_view=True)
         else:
-            return render_template("rooms/can_not_view_room.html", user=current_user.get_username(), room=room)
+            return render_template("rooms/room.html", user=current_user.get_username(), room=room, posts=None,
+                                   can_write=False, admin=False, title="You can't view this room.", delete_room_form=None,
+                                   leave_room_form=None, join_room_form=None, can_view=False)
     else:
         abort(404)
 
@@ -206,29 +282,6 @@ def create_new_room():
 
         return redirect(url_for("new_room"))
 
-@app.route("/rooms/<int:room_id>/members")
-@login_required
-def room_members(room_id: int):
-    room = db.room_get_info({"id": room_id}, "*", False)
-    if room and room[3] != "chat":
-        if (room[4] == "*all" or
-                (room[4] == "*members" and room[3] == "group" and current_user.get_username() in literal_eval(room[2])) or
-                (room[3] == "archive" and current_user.get_status() == "moderator")):
-            if "[" in room[2]:
-                members = literal_eval(room[2])
-            else:
-                members = room[2]
-
-            admins = literal_eval(room[7])
-
-            return render_template("rooms/room_members.html", room=room, members=members, admins=admins,
-                                   is_admin=current_user.get_username() in admins, user=current_user.get_username())
-        else:
-            return render_template("rooms/can_not_view_room_members.html")
-    else:
-        abort(404)
-
-# <============================== Authorisation pages ==============================> #
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     allowed_characters = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM_-0123456789"

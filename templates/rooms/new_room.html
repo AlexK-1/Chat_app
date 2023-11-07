@@ -4,10 +4,49 @@
 
 {% block content %}
 
-New room.
+<div id="main-wrapper" class="wrapp">
 
-<br>
+<div style="overflow-y: auto;overflow-x: hidden">
+<div id="left-panel">
 
+<section aria-label="Settings and search panel" id="top-left-panel" class="additional-panel">
+    <div>
+        <button>Settings</button>
+        <input type="search" id="search-input">
+        <button>Search</button>
+    </div>
+</section>
+
+
+<div aria-label="User rooms" id="rooms-container" aria-label="User rooms">
+    <nav>
+        <ul class="unmark-list" id="rooms-list">
+            <li id="rooms_loading"><p>loading...</p></li>
+        </ul>
+    </nav>
+</div>
+
+
+<section aria-label="Additional features panel" id="left-bottom-panel" class="additional-panel">
+    <div>
+        <div>
+            <span>{{ user }}</span>
+        </div>
+        <div>
+            <a href="{{ url_for('new_room') }}">Create new room</a>
+        </div>
+        <div>
+            <a href="{{ url_for('logout') }}">log out</a>
+        </div>
+    </div>
+</section>
+
+</div>
+</div>
+
+<main>
+
+<div id="create-room-form">
 {% for cat, message in get_flashed_messages(True) %}
     {{cat.capitalize()}}: {{message}}
 {% endfor %}
@@ -18,6 +57,26 @@ New room.
         <input type="radio" name="type" value="group" id="type_group" onchange="updateForm('group')"> Group
     </p>
 </form>
+</div>
+
+</main>
+    
+</div>
+
+<!--New room.-->
+
+<!--<br>-->
+
+<!--{% for cat, message in get_flashed_messages(True) %}-->
+<!--    {{cat.capitalize()}}: {{message}}-->
+<!--{% endfor %}-->
+
+<!--<form action="new_room/create" method="POST">-->
+<!--    <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">-->
+<!--    <p><input type="radio" name="type" value="chat" id="type_chat" onchange="updateForm('chat')"> Chat-->
+<!--        <input type="radio" name="type" value="group" id="type_group" onchange="updateForm('group')"> Group-->
+<!--    </p>-->
+<!--</form>-->
 
 <script>
     const user = {{ {"data": user}|tojson }}.data;
