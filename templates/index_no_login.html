@@ -1,9 +1,59 @@
 {% extends 'base.html' %}
 
-{% block title %}Title{% endblock %}
+{% block title %}Simple chat{% endblock %}
 
 {% block content %}
 
-Hello World!
+<div>
+
+<nav id="upper-nav">
+    <div class="flex">
+        <a class="nav-element nav-link" href="/"><span>Simple Chat</span></a>
+    </div>
+    <div class="flex">
+        <a class="nav-element nav-link" href="/login"><span>Log In</span></a>
+        <a class="nav-element nav-link" href="/signup"><span>Sign Up</span></a>
+    </div>
+</nav>
+
+<main id="main-page">
+    <h1 class="center big-text">This site is</h1>
+    <p class="description">simple, not very convenient, with only basic functions, boring,
+        in some places poorly written site with the simplest chat functions.</p>
+    <p class="description">
+        Here you can create both a private chat of two people,
+        and a group with several participants and administrators.
+    </p>
+    <h2>
+        Should I use it?
+    </h2>
+    <p class="description">
+        Why should you use this particular site to communicate with others?
+        The answer is simple: neither why.
+        This site has more disadvantages than positive qualities,
+        so you'd better not use it before it ceases to be in the alpha version,
+        as your correspondence may accidentally be erased.
+    </p>
+    <h2>About the author and his future team</h2>
+    <p class="description">
+        The author of this site is a novice programmer trying to master web development.
+        He is working so far without a team.
+        But if you want to help him, write to the user "admin" on this site about it.
+    </p>
+    <h2>Project objectives</h2>
+    <p class="description">
+        The main goal of the project is to give experience to the creator of this site in creating websites.
+    </p>
+    <h2>Translator?</h2>
+    <p class="description">
+        There may be spelling and syntactic errors in this text,
+        incorrect pronouns may be used, since the creator of the site does not know English
+        and inserts the text into this site from the translator.
+        But maybe someday he will learn that language
+        and will be able to develop this website without the help of a translator.
+    </p>
+</main>
+
+</div>
 
 {% endblock %}

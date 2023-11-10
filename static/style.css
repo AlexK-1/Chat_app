@@ -6,6 +6,7 @@ html {
 body {
     margin: 0;
     height: 100%;
+    font-family: Arial, sans-serif;
 }
 
 main {
@@ -107,10 +108,46 @@ main {
     display: flex;
 }
 
+.nav-element {
+    display: block;
+    margin: 0;
+    padding: 15px 10px 10px 10px;
+    height: 25px;
+    background-color: white;
+    font-size: 18px;
+}
+
+.nav-element:hover {
+    position: relative;
+    background-color: whitesmoke;
+}
+
+.nav-link {
+    outline: none;
+    text-decoration: none;
+}
+
+.right {
+    position: relative;
+    float: right;
+}
+
+.flex {
+    display: flex;
+}
+
+.big-text {
+    font-size: 50px;
+}
+
+.description {
+    font-size: 23px;
+}
+
 #main-wrapper {
     height: 100%;
     box-sizing: border-box;
-    grid-template-columns: 315px auto 385px;
+    grid-template-columns: 317px auto 385px;
 }
 
 #rooms-container {
@@ -128,7 +165,7 @@ main {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    width: 315px;
+    width: 317px;
     height: 100%;
     border-right: 1px solid black;
 }
@@ -220,9 +257,35 @@ main {
     margin: 0 15px;
 }
 
-/*.center {
-    position: absolute;
-    top:  50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-}*/
+
+#upper-nav {
+    display: grid;
+    grid-template-columns: auto 155px;
+    position: fixed;
+    top: 0;
+    width: calc(100% - 600px);
+    height: 50px;
+    border-bottom: 1px solid black;
+    padding: 0 300px;
+    background-color: white;
+}
+
+#upper-nav-list {
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+#main-page {
+    margin-top: 50px;
+    text-align: center;
+    padding: 0 300px;
+}
+
+#login-form {
+    display: block;
+    margin: 60px auto;
+    border: 1px solid black;
+    padding: 10px 80px;
+    max-width: 350px;
+}

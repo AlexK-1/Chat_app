@@ -1,13 +1,27 @@
 {% extends 'base.html' %}
 
-{% block title %}Log In{% endblock %}
+{% block title %}Log In - Simple chat{% endblock %}
 
 {% block content %}
 
-{% for cat, message in get_flashed_messages(True) %}
+
+<div>
+<nav id="upper-nav">
+    <div class="flex">
+        <a class="nav-element nav-link" href="/"><span>Simple Chat</span></a>
+    </div>
+    <div class="flex">
+        <a class="nav-element nav-link" href="/login"><span>Log In</span></a>
+        <a class="nav-element nav-link" href="/signup"><span>Sign Up</span></a>
+    </div>
+</nav>
+
+<main id="main-page">
+    {% for cat, message in get_flashed_messages(True) %}
     <p>{{ cat.capitalize() }}: {{ message }}</p>
 {% endfor %}
 
+<div id="login-form">
 <form action="" method="POST">
     {{ form.hidden_tag() }}
     {% for field in form if field.name not in ['csrf_token', 'submit']%}
@@ -24,5 +38,11 @@
     {% endfor %}
     {{ form.submit() }}
 </form>
+</div>
+
+</main>
+    
+</div>
+
 
 {% endblock %}

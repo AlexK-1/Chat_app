@@ -45,6 +45,10 @@ def make_login(username: str, password: str):
         return True
     return False
 
+# <============================== Error handlers ==============================> #
+@app.errorhandler(404)
+def error404(e):
+    return render_template("errors/404.html")
 
 # <============================== Index ==============================> #
 @app.route("/", methods=["GET", "POST"])
