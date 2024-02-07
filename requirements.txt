@@ -1,0 +1,7 @@
+Flask~=2.3.3
+Werkzeug~=2.3.8
+WTForms~=3.0.1
+flask-login
+flask-socketio
+flask-wtf
+flask-session

@@ -169,3 +169,4 @@ instance/*
 flask_session/
 LICENSE
 test.py
+.idea/
